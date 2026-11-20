@@ -388,6 +388,9 @@ export function announceDoctorStatus(status: 'ACTIVE' | 'BREAK') {
  * Announces doctor delay status using a natural, clear female voice.
  */
 export function announceDoctorDelay(minutes: number, reason?: string) {
+  // Play attention chime
+  playHospitalChime();
+
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return;
   }

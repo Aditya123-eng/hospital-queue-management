@@ -118,15 +118,21 @@ export default function DoctorView({
     if (!selectedDoctor) return;
     const mins = parseInt(delayInputMinutes, 10) || 0;
 
-    // Immediate female voice announcement for delay
+    unlockAudio();
+    setShowDelayModal(false); // Close dialog instantly so user does not need to click Cancel manually
+
+    // Immediate female voice announcement with chime for delay
     announceDoctorDelay(mins, delayReasonInput);
 
-    await onUpdateDoctor(selectedDoctor.id, {
-      delayMinutes: mins,
-      delayReason: delayReasonInput,
-      status: mins > 0 ? 'EMERGENCY_DELAY' : 'AVAILABLE'
-    });
-    setShowDelayModal(false);
+    try {
+      await onUpdateDoctor(selectedDoctor.id, {
+        delayMinutes: mins,
+        delayReason: delayReasonInput,
+        status: mins > 0 ? 'EMERGENCY_DELAY' : 'AVAILABLE'
+      });
+    } catch (err) {
+      console.error('Error broadcasting doctor delay:', err);
+    }
   };
 
   const handleStatusChange = async (status: DoctorStatus) => {
@@ -254,9 +260,9 @@ export default function DoctorView({
           <div className="w-full sm:w-auto">
             <button
               onClick={() => {
-                if (selectedDoctor.delayMinutes > 0) {
-                  announceDoctorDelay(selectedDoctor.delayMinutes, selectedDoctor.delayReason);
-                }
+                unlockAudio();
+                setDelayInputMinutes(selectedDoctor.delayMinutes > 0 ? String(selectedDoctor.delayMinutes) : '15');
+                setDelayReasonInput(selectedDoctor.delayReason || 'Emergency clinical review');
                 setShowDelayModal(true);
               }}
               className={`w-full sm:w-auto px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 ${
