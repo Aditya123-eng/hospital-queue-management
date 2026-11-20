@@ -5,13 +5,13 @@ import { DoctorStatus } from '@/lib/types';
 // PATCH /api/doctors/[id]
 export async function PATCH(
   request: NextRequest,
-  context: { params?: Promise<{ id?: string }> | { id?: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const rawParams = context?.params ? await Promise.resolve(context.params) : {};
+    const { id } = await context.params;
     const body = await request.json();
     const { status, delayMinutes, delayReason, roomNumber } = body;
-    const targetId = String(rawParams?.id || body?.id || body?.doctorId || '').trim();
+    const targetId = String(id || body?.id || body?.doctorId || '').trim();
 
     const state = loadHospitalState();
     const doctor = state.doctors.find(

@@ -599,6 +599,34 @@
   ],
   "auditLogs": [
     {
+      "id": "log-1795195643539-rjhm",
+      "timestamp": "2026-11-20T17:27:23.539Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
+    {
+      "id": "log-1795195639931-m5iq",
+      "timestamp": "2026-11-20T17:27:19.931Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
+    {
+      "id": "log-1795195337120-535x",
+      "timestamp": "2026-11-20T17:22:17.120Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
+    {
+      "id": "log-1795195332065-j0tn",
+      "timestamp": "2026-11-20T17:22:12.065Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
+    {
       "id": "log-1795194962401-jenh",
       "timestamp": "2026-11-20T17:16:02.401Z",
       "action": "DOCTOR_STATUS_UPDATE",
@@ -1371,40 +1399,6 @@
       "action": "DOCTOR_STATUS_UPDATE",
       "actor": "Dr. Rajesh Sharma, MD",
       "details": "Set status to ON_BREAK in Room Room 101. Consultations temporarily paused."
-    },
-    {
-      "id": "log-1795102457024-jmyq",
-      "timestamp": "2026-11-19T15:34:17.025Z",
-      "action": "DOCTOR_STATUS_UPDATE",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Set status to ON_BREAK in Room Room 101. Consultations temporarily paused."
-    },
-    {
-      "id": "log-1795095375764-jukq",
-      "timestamp": "2026-11-19T13:36:15.764Z",
-      "ticketId": "ticket-1795095375764-2zihs",
-      "ticketNumber": "GEN-107",
-      "action": "PATIENT_CHECKED_IN",
-      "actor": "Reception Desk / Self Kiosk",
-      "details": "Checked in Rohit Sen (GEN-107) for General Medicine OPD. Priority: NORMAL"
-    },
-    {
-      "id": "log-1795094969556-wxes",
-      "timestamp": "2026-11-19T13:29:29.556Z",
-      "ticketId": "ticket-1795094969556-jrxgp",
-      "ticketNumber": "GEN-106",
-      "action": "PATIENT_CHECKED_IN",
-      "actor": "Reception Desk / Self Kiosk",
-      "details": "Checked in Rohit Sen (GEN-106) for General Medicine OPD. Priority: NORMAL"
-    },
-    {
-      "id": "log-1795094212497-jye4",
-      "timestamp": "2026-11-19T13:16:52.497Z",
-      "ticketId": "ticket-1795094212497-xmho7",
-      "ticketNumber": "GEN-105",
-      "action": "PATIENT_CHECKED_IN",
-      "actor": "Reception Desk / Self Kiosk",
-      "details": "Checked in Devendra Singhania (CRITICAL) (GEN-105) for General Medicine OPD. Priority: EMERGENCY"
     }
   ],
   "announcements": [
