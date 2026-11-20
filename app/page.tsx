@@ -15,7 +15,7 @@ import {
   AuditLog, 
   PriorityLevel 
 } from '@/lib/types';
-import { announcePatientCall } from '@/lib/audio';
+import { announcePatientCall, unlockAudio } from '@/lib/audio';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
@@ -80,7 +80,7 @@ export default function Home() {
 
   // Initial load and periodic polling every 4 seconds
   useEffect(() => {
-    fetchData();
+    fetchData(true);
     const interval = setInterval(() => {
       fetchData(true);
     }, 4000);
@@ -174,6 +174,7 @@ export default function Home() {
   // Handler: Doctor Calls Next
   const handleCallNext = async (doctorId: string, autoCompleteCurrent: boolean = true) => {
     try {
+      unlockAudio();
       const res = await fetch('/api/queue/call-next', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -342,6 +343,7 @@ export default function Home() {
 
   // Quick Demo Scenario 2: Quick Doctor Call Next
   const handleCallNextQuick = async () => {
+    unlockAudio();
     const activeDoc = doctors[0];
     if (!activeDoc) return;
     try {
@@ -439,7 +441,7 @@ export default function Home() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 pb-28 md:pb-12 transition-all">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-28 text-slate-500">
             <div className="relative mb-4">

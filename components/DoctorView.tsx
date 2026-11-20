@@ -21,7 +21,7 @@ import {
   Sparkles,
   UserCheck
 } from 'lucide-react';
-import { announcePatientCall, announceDoctorStatus, announceDoctorDelay } from '@/lib/audio';
+import { announcePatientCall, announceDoctorStatus, announceDoctorDelay, unlockAudio } from '@/lib/audio';
 
 interface DoctorViewProps {
   doctors: Doctor[];
@@ -62,6 +62,7 @@ export default function DoctorView({
 
   const handleCallNext = async () => {
     if (!selectedDoctor) return;
+    unlockAudio();
     setIsCallingNext(true);
     try {
       const res = await onCallNext(selectedDoctor.id, true);
@@ -194,13 +195,13 @@ export default function DoctorView({
         </div>
 
         {/* Doctor Switcher & Status */}
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div>
+        <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-end gap-3 w-full md:w-auto">
+          <div className="w-full sm:w-auto">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Switch Doctor Room:</label>
             <select
               value={selectedDoctorId}
               onChange={e => setSelectedDoctorId(e.target.value)}
-              className="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white text-slate-800 shadow-2xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer"
+              className="w-full sm:w-auto px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white text-slate-800 shadow-2xs focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 cursor-pointer"
             >
               {doctors.map(d => (
                 <option key={d.id} value={d.id}>
@@ -210,13 +211,13 @@ export default function DoctorView({
             </select>
           </div>
 
-          <div>
+          <div className="w-full sm:w-auto">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Room Status:</label>
-            <div className="inline-flex rounded-xl border border-slate-200 p-1 bg-slate-100/90 text-xs shadow-inner">
+            <div className="flex sm:inline-flex rounded-xl border border-slate-200 p-1 bg-slate-100/90 text-xs shadow-inner">
               <button
                 onClick={() => handleStatusChange('AVAILABLE')}
                 disabled={isUpdatingStatus}
-                className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                   selectedDoctor.status === 'AVAILABLE' || selectedDoctor.status === 'CONSULTING'
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -228,7 +229,7 @@ export default function DoctorView({
               <button
                 onClick={() => handleStatusChange('ON_BREAK')}
                 disabled={isUpdatingStatus}
-                className={`px-3 py-1 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   selectedDoctor.status === 'ON_BREAK'
                     ? 'bg-amber-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
@@ -241,7 +242,7 @@ export default function DoctorView({
             </div>
           </div>
 
-          <div className="pt-3.5">
+          <div className="w-full sm:w-auto">
             <button
               onClick={() => {
                 if (selectedDoctor.delayMinutes > 0) {
@@ -249,7 +250,7 @@ export default function DoctorView({
                 }
                 setShowDelayModal(true);
               }}
-              className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+              className={`w-full sm:w-auto px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 ${
                 selectedDoctor.delayMinutes > 0
                   ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100 glow-amber'
                   : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 shadow-2xs'
@@ -379,6 +380,18 @@ export default function DoctorView({
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
+                <button
+                  onClick={() => {
+                    unlockAudio();
+                    announcePatientCall(currentTicket.ticketNumber, selectedDoctor.roomNumber, currentTicket.patientName);
+                  }}
+                  className="px-3.5 py-2.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 rounded-xl text-xs font-bold border border-cyan-200 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  title="Re-broadcast hospital chime & voice announcement to waiting lobby"
+                >
+                  <Volume2 className="w-4 h-4 text-cyan-600" />
+                  <span>Announce Voice</span>
+                </button>
+
                 {currentTicket.status === 'CALLED' && (
                   <button
                     onClick={handleStartConsultation}

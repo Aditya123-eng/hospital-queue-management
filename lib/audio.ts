@@ -1,11 +1,75 @@
 // Hospital Chime and Natural Female Voice Text-To-Speech announcement utility using native Web APIs
+// Mobile-optimized for Android Chrome, iOS Safari, and Desktop browsers
 
+let audioContextInstance: AudioContext | null = null;
 let cachedVoices: SpeechSynthesisVoice[] = [];
 let voicesLoadedPromise: Promise<SpeechSynthesisVoice[]> | null = null;
+// Prevent mobile browser garbage collection of active speech utterance
+let activeUtterance: SpeechSynthesisUtterance | null = null;
+
+/**
+ * Lazily creates or returns the shared AudioContext instance.
+ * Automatically handles webkitAudioContext prefix and resumes suspended context on mobile.
+ */
+export function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    if (!audioContextInstance) {
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextInstance = new AudioContextClass();
+      }
+    }
+
+    if (audioContextInstance && audioContextInstance.state === 'suspended') {
+      audioContextInstance.resume().catch(() => {
+        // Ignored if user hasn't interacted yet
+      });
+    }
+
+    return audioContextInstance;
+  } catch (e) {
+    console.warn('AudioContext initialization error:', e);
+    return null;
+  }
+}
+
+/**
+ * Mobile Audio & Speech Unlocker:
+ * Mobile browsers require an explicit user gesture (tap/click) to unlock AudioContext
+ * and SpeechSynthesis. Calling this synchronously in onClick handlers ensures voice
+ * announcements play even after asynchronous fetch calls.
+ */
+export function unlockAudio() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    // 1. Unlock AudioContext
+    const ctx = getAudioContext();
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
+    // 2. Unlock SpeechSynthesis on mobile
+    if ('speechSynthesis' in window) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+      // Speak a zero-volume silent utterance to unlock speech synthesizer
+      const silent = new SpeechSynthesisUtterance('');
+      silent.volume = 0;
+      silent.rate = 2.0;
+      window.speechSynthesis.speak(silent);
+    }
+  } catch {
+    // Silent fail if blocked
+  }
+}
 
 /**
  * Initializes and retrieves available browser speech synthesis voices.
- * Handles asynchronous voice loading in Chrome, Edge, and Windows.
+ * Handles asynchronous voice loading in Chrome, Android, Edge, and Windows.
  */
 export function getAvailableVoices(): Promise<SpeechSynthesisVoice[]> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -39,12 +103,12 @@ export function getAvailableVoices(): Promise<SpeechSynthesisVoice[]> {
 
     window.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
 
-    // Timeout safety fallback after 500ms
+    // Timeout safety fallback after 300ms
     setTimeout(() => {
       const v = window.speechSynthesis.getVoices();
       cachedVoices = v;
       resolve(v);
-    }, 500);
+    }, 300);
   });
 
   return voicesLoadedPromise;
@@ -52,20 +116,30 @@ export function getAvailableVoices(): Promise<SpeechSynthesisVoice[]> {
 
 /**
  * Intelligent selector to choose the highest-quality realistic female voice.
- * Prioritizes Microsoft Neural/Natural online voices, Google high-definition female voices,
- * Apple Samantha/Victoria, and Windows female voices (Aria, Jenny, Sonia, Neerja, Zira).
+ * Prioritizes Indian English / Neural / Natural online voices, Google high-definition female voices,
+ * Apple Samantha/Victoria, and Android TTS female voices.
  */
 export function findBestFemaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
   if (!voices || voices.length === 0) return null;
 
-  // 1. Top Tier: Realistic Natural / Neural Female voices (available in Windows Edge, Chrome, Safari)
+  // 1. Top Tier: Indian English Female / Natural voices (ideal for hospital OPDs in India)
+  const inEnVoices = voices.filter(v => v.lang.toLowerCase().includes('en-in') || v.lang.toLowerCase().includes('en_in'));
+  const inFemale = inEnVoices.find(v => 
+    v.name.toLowerCase().includes('female') || 
+    v.name.toLowerCase().includes('neerja') || 
+    v.name.toLowerCase().includes('heera') || 
+    v.name.toLowerCase().includes('veena') ||
+    v.name.toLowerCase().includes('google')
+  );
+  if (inFemale) return inFemale;
+  if (inEnVoices.length > 0) return inEnVoices[0];
+
+  // 2. High-quality natural / neural female voices (Windows Edge, Chrome, Safari, Android)
   const topTierFemaleKeywords = [
     'microsoft aria online (natural)',
     'microsoft jenny online (natural)',
-    'microsoft sonia online (natural)',
-    'microsoft libby online (natural)',
     'microsoft neerja online (natural)',
-    'microsoft heera online (natural)',
+    'microsoft sonia online (natural)',
     'google uk english female',
     'google us english',
     'samantha',
@@ -76,8 +150,7 @@ export function findBestFemaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynth
     'microsoft aria',
     'microsoft jenny',
     'microsoft zira',
-    'microsoft sonia',
-    'microsoft neerja'
+    'microsoft sonia'
   ];
 
   for (const keyword of topTierFemaleKeywords) {
@@ -85,7 +158,7 @@ export function findBestFemaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynth
     if (found) return found;
   }
 
-  // 2. Any English voice with "female", "woman", or "natural" in the name
+  // 3. Any English voice with "female", "woman", or "natural" in the name
   const explicitFemaleEn = voices.find(
     v => v.lang.startsWith('en') && (
       v.name.toLowerCase().includes('female') ||
@@ -95,7 +168,7 @@ export function findBestFemaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynth
   );
   if (explicitFemaleEn) return explicitFemaleEn;
 
-  // 3. Known feminine first names across global TTS engines
+  // 4. Known feminine first names across global TTS engines
   const femaleNames = [
     'jenny', 'aria', 'zira', 'samantha', 'victoria', 'karen', 
     'sonia', 'libby', 'neerja', 'heera', 'fiona', 'tessa', 
@@ -106,14 +179,7 @@ export function findBestFemaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynth
   );
   if (femaleEn) return femaleEn;
 
-  // 4. Any English voice that is NOT explicitly named after a male persona
-  const maleNames = ['david', 'mark', 'george', 'guy', 'male', 'richard', 'james', 'stefan', 'ravi', 'sean'];
-  const nonMaleEn = voices.find(
-    v => v.lang.startsWith('en') && !maleNames.some(mn => v.name.toLowerCase().includes(mn))
-  );
-  if (nonMaleEn) return nonMaleEn;
-
-  // 5. Default English voice fallback
+  // 5. Any English voice
   const anyEn = voices.find(v => v.lang.startsWith('en'));
   if (anyEn) return anyEn;
 
@@ -125,21 +191,21 @@ export function findBestFemaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynth
  */
 export function playHospitalChime() {
   try {
-    if (typeof window === 'undefined') return;
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioContextClass) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
 
-    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
     const now = ctx.currentTime;
 
     // Pleasant 3-note harmonic hospital announcement chime
-    // Note 1: E5 (659.25 Hz)
-    // Note 2: G#5 (830.61 Hz)
-    // Note 3: B5 (987.77 Hz)
+    // Note 1: E5 (659.25 Hz), Note 2: G#5 (830.61 Hz), Note 3: B5 (987.77 Hz)
     const tones = [
-      { freq: 659.25, time: 0.00, duration: 0.55, gain: 0.22 },
-      { freq: 830.61, time: 0.18, duration: 0.60, gain: 0.26 },
-      { freq: 987.77, time: 0.38, duration: 0.85, gain: 0.28 }
+      { freq: 659.25, time: 0.00, duration: 0.45, gain: 0.22 },
+      { freq: 830.61, time: 0.14, duration: 0.50, gain: 0.26 },
+      { freq: 987.77, time: 0.30, duration: 0.70, gain: 0.28 }
     ];
 
     tones.forEach(({ freq, time, duration, gain }) => {
@@ -150,7 +216,7 @@ export function playHospitalChime() {
       osc.frequency.setValueAtTime(freq, now + time);
 
       gainNode.gain.setValueAtTime(0.001, now + time);
-      gainNode.gain.exponentialRampToValueAtTime(gain, now + time + 0.04);
+      gainNode.gain.exponentialRampToValueAtTime(gain, now + time + 0.03);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now + time + duration);
 
       osc.connect(gainNode);
@@ -189,6 +255,7 @@ function formatRoomForSpeech(room: string): string {
 /**
  * Plays the hospital chime and announces the patient's token number and name
  * using a high-quality, realistic female receptionist voice.
+ * Mobile-resilient with direct utterance invocation and garbage-collection shield.
  */
 export async function announcePatientCall(
   ticketNumber: string, 
@@ -202,47 +269,66 @@ export async function announcePatientCall(
     return;
   }
 
-  // Pre-fetch voices
-  const voices = await getAvailableVoices();
-  const femaleVoice = findBestFemaleVoice(voices);
-
-  // Allow chime to ring smoothly before speech starts (700ms)
-  setTimeout(() => {
-    try {
-      // Cancel any ongoing or stuck speech
-      window.speechSynthesis.cancel();
-
-      const phoneticToken = formatTokenForSpeech(ticketNumber);
-      const phoneticRoom = formatRoomForSpeech(roomNumber);
-
-      // Natural, polite hospital receptionist announcement phrasing
-      const announcementText = patientName && patientName.trim()
-        ? `Attention please. Token number ${phoneticToken}, ${patientName.trim()}, please proceed to ${phoneticRoom}.`
-        : `Attention please. Token number ${phoneticToken}, please proceed to ${phoneticRoom}.`;
-
-      const utterance = new SpeechSynthesisUtterance(announcementText);
-
-      if (femaleVoice) {
-        utterance.voice = femaleVoice;
-        utterance.lang = femaleVoice.lang || 'en-US';
-      }
-
-      // Tuned for natural, clear, professional female receptionist delivery:
-      // Slightly measured pacing so patients in noisy waiting rooms catch every syllable
-      utterance.rate = 0.88;
-      utterance.pitch = 1.08;
-      utterance.volume = 1.0;
-
-      window.speechSynthesis.speak(utterance);
-    } catch (err) {
-      console.warn('Speech synthesis announcement error:', err);
+  try {
+    // Resume speech synthesis if paused (common mobile Chromium quirk)
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
     }
-  }, 700);
+    // Cancel previous speech
+    window.speechSynthesis.cancel();
+
+    // Pre-fetch voices
+    const voices = await getAvailableVoices();
+    const femaleVoice = findBestFemaleVoice(voices);
+
+    const phoneticToken = formatTokenForSpeech(ticketNumber);
+    const phoneticRoom = formatRoomForSpeech(roomNumber);
+
+    // Natural, polite hospital receptionist announcement phrasing
+    const announcementText = patientName && patientName.trim()
+      ? `Attention please. Token number ${phoneticToken}, ${patientName.trim()}, please proceed to ${phoneticRoom}.`
+      : `Attention please. Token number ${phoneticToken}, please proceed to ${phoneticRoom}.`;
+
+    const utterance = new SpeechSynthesisUtterance(announcementText);
+    activeUtterance = utterance;
+
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+      utterance.lang = femaleVoice.lang || 'en-US';
+    } else {
+      utterance.lang = 'en-US';
+    }
+
+    // Tuned for natural, clear, professional female delivery
+    utterance.rate = 0.90;
+    utterance.pitch = 1.05;
+    utterance.volume = 1.0;
+
+    utterance.onend = () => {
+      activeUtterance = null;
+    };
+    utterance.onerror = () => {
+      activeUtterance = null;
+    };
+
+    // On mobile, short delay (250ms) to allow chime note attack while retaining user gesture validity
+    setTimeout(() => {
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('Speech synthesis speak error:', err);
+      }
+    }, 250);
+  } catch (err) {
+    console.warn('Speech synthesis announcement error:', err);
+  }
 }
 
 /**
  * Announces doctor room status change (Active vs Break) using a natural, clear female voice.
- * Plays immediately upon button click using browser SpeechSynthesis API.
  */
 export function announceDoctorStatus(status: 'ACTIVE' | 'BREAK') {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -250,7 +336,7 @@ export function announceDoctorStatus(status: 'ACTIVE' | 'BREAK') {
   }
 
   try {
-    // Cancel any previous or ongoing speech so new status plays immediately
+    unlockAudio();
     window.speechSynthesis.cancel();
     if (window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
@@ -261,6 +347,7 @@ export function announceDoctorStatus(status: 'ACTIVE' | 'BREAK') {
       : 'The doctor is currently on a break and is temporarily unavailable.';
 
     const utterance = new SpeechSynthesisUtterance(announcementText);
+    activeUtterance = utterance;
 
     const applyVoiceAndSpeak = (voices: SpeechSynthesisVoice[]) => {
       const femaleVoice = findBestFemaleVoice(voices);
@@ -271,10 +358,12 @@ export function announceDoctorStatus(status: 'ACTIVE' | 'BREAK') {
         utterance.lang = 'en-US';
       }
 
-      // Professional, natural, clear female delivery
       utterance.rate = 0.95;
       utterance.pitch = 1.05;
       utterance.volume = 1.0;
+
+      utterance.onend = () => { activeUtterance = null; };
+      utterance.onerror = () => { activeUtterance = null; };
 
       window.speechSynthesis.speak(utterance);
     };
@@ -297,7 +386,6 @@ export function announceDoctorStatus(status: 'ACTIVE' | 'BREAK') {
 
 /**
  * Announces doctor delay status using a natural, clear female voice.
- * Plays immediately upon button click using browser SpeechSynthesis API.
  */
 export function announceDoctorDelay(minutes: number, reason?: string) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -305,7 +393,7 @@ export function announceDoctorDelay(minutes: number, reason?: string) {
   }
 
   try {
-    // Cancel any previous or ongoing speech so new status plays immediately
+    unlockAudio();
     window.speechSynthesis.cancel();
     if (window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
@@ -325,6 +413,7 @@ export function announceDoctorDelay(minutes: number, reason?: string) {
     }
 
     const utterance = new SpeechSynthesisUtterance(announcementText);
+    activeUtterance = utterance;
 
     const applyVoiceAndSpeak = (voices: SpeechSynthesisVoice[]) => {
       const femaleVoice = findBestFemaleVoice(voices);
@@ -335,10 +424,12 @@ export function announceDoctorDelay(minutes: number, reason?: string) {
         utterance.lang = 'en-US';
       }
 
-      // Professional, natural, clear female delivery
       utterance.rate = 0.95;
       utterance.pitch = 1.05;
       utterance.volume = 1.0;
+
+      utterance.onend = () => { activeUtterance = null; };
+      utterance.onerror = () => { activeUtterance = null; };
 
       window.speechSynthesis.speak(utterance);
     };

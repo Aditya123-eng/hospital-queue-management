@@ -48,7 +48,7 @@
       "specialty": "Senior General Physician",
       "departmentId": "dept-gen",
       "roomNumber": "Room 101",
-      "status": "AVAILABLE",
+      "status": "ON_BREAK",
       "currentTicketId": null,
       "delayMinutes": 10,
       "delayReason": "Emergency clinical review"
@@ -524,6 +524,13 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1795181715481-gjtj",
+      "timestamp": "2026-11-20T13:35:15.481Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
     {
       "id": "log-1795163043941-o6on",
       "timestamp": "2026-11-20T08:24:03.941Z",

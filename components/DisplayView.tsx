@@ -15,7 +15,7 @@ import {
   Activity,
   Sparkles
 } from 'lucide-react';
-import { playHospitalChime, announcePatientCall } from '@/lib/audio';
+import { playHospitalChime, announcePatientCall, unlockAudio } from '@/lib/audio';
 
 interface DisplayViewProps {
   doctors: Doctor[];
@@ -65,6 +65,7 @@ export default function DisplayView({
     .slice(0, 8);
 
   const handleManualTestChime = () => {
+    unlockAudio();
     setIsChiming(true);
     const sampleTicket = tickets.find(t => t.status === 'CALLED' || t.status === 'IN_CONSULTATION') || tickets[0];
     if (sampleTicket) {
