@@ -63,11 +63,18 @@ export async function GET(request: NextRequest) {
       return new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime();
     });
 
-    return NextResponse.json({
-      success: true,
-      count: tickets.length,
-      data: tickets
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        count: tickets.length,
+        data: tickets
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+        }
+      }
+    );
   } catch (error: any) {
     console.error('Error fetching queue:', error);
     return NextResponse.json(

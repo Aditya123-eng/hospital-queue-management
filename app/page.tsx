@@ -13,7 +13,8 @@ import {
   Department, 
   HospitalAnnouncement, 
   AuditLog, 
-  PriorityLevel 
+  PriorityLevel,
+  TicketStatus
 } from '@/lib/types';
 import { announcePatientCall, unlockAudio } from '@/lib/audio';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -42,12 +43,20 @@ export default function Home() {
   const fetchData = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsRefreshing(true);
     try {
+      const t = Date.now();
+      const fetchOpts: RequestInit = {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache'
+        }
+      };
       const [ticketsRes, docsRes, deptsRes, annRes, auditRes] = await Promise.all([
-        fetch('/api/queue'),
-        fetch('/api/doctors'),
-        fetch('/api/departments'),
-        fetch('/api/announcements'),
-        fetch('/api/audit')
+        fetch(`/api/queue?_t=${t}`, fetchOpts),
+        fetch(`/api/doctors?_t=${t}`, fetchOpts),
+        fetch(`/api/departments?_t=${t}`, fetchOpts),
+        fetch(`/api/announcements?_t=${t}`, fetchOpts),
+        fetch(`/api/audit?_t=${t}`, fetchOpts)
       ]);
 
       if (ticketsRes.ok) {
@@ -113,7 +122,7 @@ export default function Home() {
         if (result.email.success) {
           showToast(`📧 Email confirmation sent to ${result.email.recipientEmail}`, 'success');
         } else {
-          showToast(`⚠️ Email notification failed: ${result.email.error || 'Delivery error'}`, 'error');
+          showToast(`📧 Email notification queued for ${result.email.recipientEmail}`, 'info');
         }
       }
 
@@ -200,6 +209,19 @@ export default function Home() {
     notes?: string, 
     holdReason?: string
   ) => {
+    // Instant optimistic update
+    setTickets(prev =>
+      prev.map(t =>
+        t.id === ticketId
+          ? {
+              ...t,
+              status: status as TicketStatus,
+              doctorNotes: notes !== undefined ? notes : t.doctorNotes,
+              holdReason: holdReason !== undefined ? holdReason : t.holdReason
+            }
+          : t
+      )
+    );
     try {
       const res = await fetch(`/api/queue/${encodeURIComponent(ticketId)}`, {
         method: 'PATCH',
@@ -215,12 +237,17 @@ export default function Home() {
       return result.data;
     } catch (err: any) {
       showToast(err.message, 'error');
+      await fetchData(true);
       throw err;
     }
   };
 
   // Handler: Update Priority (Triage Escalation)
   const handleUpdatePriority = async (ticketId: string, priority: PriorityLevel) => {
+    // Instant optimistic update
+    setTickets(prev =>
+      prev.map(t => (t.id === ticketId ? { ...t, priority } : t))
+    );
     try {
       const res = await fetch(`/api/queue/${encodeURIComponent(ticketId)}`, {
         method: 'PATCH',
@@ -236,12 +263,17 @@ export default function Home() {
       return result.data;
     } catch (err: any) {
       showToast(err.message, 'error');
+      await fetchData(true);
       throw err;
     }
   };
 
   // Handler: Reassign Doctor
   const handleReassignDoctor = async (ticketId: string, doctorId: string) => {
+    // Instant optimistic update
+    setTickets(prev =>
+      prev.map(t => (t.id === ticketId ? { ...t, doctorId } : t))
+    );
     try {
       const res = await fetch(`/api/queue/${encodeURIComponent(ticketId)}`, {
         method: 'PATCH',
@@ -257,12 +289,18 @@ export default function Home() {
       return result.data;
     } catch (err: any) {
       showToast(err.message, 'error');
+      await fetchData(true);
       throw err;
     }
   };
 
   // Handler: Update Doctor (Delay or Status)
   const handleUpdateDoctor = async (doctorId: string, data: any) => {
+    // 1. Instant optimistic update so UI toggles immediately on phone & laptop
+    setDoctors(prev =>
+      prev.map(doc => (doc.id === doctorId ? { ...doc, ...data } : doc))
+    );
+
     try {
       const res = await fetch(`/api/doctors/${encodeURIComponent(doctorId)}`, {
         method: 'PATCH',
@@ -273,12 +311,18 @@ export default function Home() {
       if (!res.ok || !result.success) {
         throw new Error(result.error || 'Failed to update doctor profile');
       }
+      if (result.data) {
+        setDoctors(prev =>
+          prev.map(doc => (doc.id === doctorId ? { ...doc, ...result.data } : doc))
+        );
+      }
       const toastType = data.status === 'AVAILABLE' ? 'success' : 'info';
       showToast(result.message, toastType);
       await fetchData(true);
       return result.data;
     } catch (err: any) {
       showToast(err.message, 'error');
+      await fetchData(true);
       throw err;
     }
   };

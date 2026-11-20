@@ -6,10 +6,17 @@ import { HospitalAnnouncement } from '@/lib/types';
 export async function GET() {
   try {
     const state = loadHospitalState();
-    return NextResponse.json({
-      success: true,
-      data: state.announcements || []
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: state.announcements || []
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+        }
+      }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to fetch announcements' },

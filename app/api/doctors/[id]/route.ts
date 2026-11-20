@@ -114,11 +114,18 @@ export async function PATCH(
 
     saveHospitalState(state);
 
-    return NextResponse.json({
-      success: true,
-      message,
-      data: doctor
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message,
+        data: doctor
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+        }
+      }
+    );
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Failed to update doctor';
     return NextResponse.json(

@@ -48,8 +48,8 @@
       "specialty": "Senior General Physician",
       "departmentId": "dept-gen",
       "roomNumber": "Room 101",
-      "status": "ON_BREAK",
-      "currentTicketId": null,
+      "status": "AVAILABLE",
+      "currentTicketId": "ticket-1795160916940-c1ecx",
       "delayMinutes": 10,
       "delayReason": "Emergency clinical review"
     },
@@ -495,12 +495,12 @@
       "doctorId": "doc-1",
       "priority": "NORMAL",
       "chiefComplaint": "General health consultation",
-      "status": "WAITING",
+      "status": "CALLED",
       "checkInTime": "2026-11-20T07:48:36.940Z",
-      "calledTime": null,
+      "calledTime": "2026-11-20T14:28:24.152Z",
       "startTime": null,
       "completedTime": null,
-      "estimatedWaitMinutes": 20,
+      "estimatedWaitMinutes": 0,
       "queuePosition": 1,
       "smsNotification": {
         "status": "SENT",
@@ -521,9 +521,195 @@
         "sentAt": "2026-11-20T07:48:36.972Z",
         "retryCount": 0
       }
+    },
+    {
+      "id": "ticket-1795184709527-0waeq",
+      "ticketNumber": "GEN-114",
+      "patientName": "Rabindar bhagat",
+      "age": 42,
+      "gender": "Male",
+      "contactNumber": "N/A",
+      "email": "bhagatrabindra191@gmail.com",
+      "departmentId": "dept-gen",
+      "doctorId": "doc-1",
+      "priority": "NORMAL",
+      "chiefComplaint": "General health consultation",
+      "status": "WAITING",
+      "checkInTime": "2026-11-20T14:25:09.527Z",
+      "calledTime": null,
+      "startTime": null,
+      "completedTime": null,
+      "estimatedWaitMinutes": 20,
+      "queuePosition": 2,
+      "smsNotification": {
+        "status": "FAILED",
+        "recipientNumber": "N/A",
+        "messageText": "Hello Rabindar bhagat, your registration is successful! Your Token Number is GEN-114. Doctor: Dr. Rajesh Sharma, MD. Date: 20 Nov 2026. Please keep this number for your consultation. Thank you!",
+        "gateway": "validator",
+        "error": "Patient contact mobile number is missing or empty",
+        "retryCount": 0
+      },
+      "emailNotification": {
+        "status": "FAILED",
+        "recipientEmail": "bhagatrabindra191@gmail.com",
+        "subject": "Patient Registration Successful – Your Token Number",
+        "bodyText": "Hello Rabindar bhagat,\n\nYour registration has been completed successfully!\n\nYour Token Number: GEN-114\n\nDoctor Name: Dr. Rajesh Sharma, MD\n\nRegistration Date: 20 Nov 2026\n\nPlease keep your Token Number safe for your consultation.\n\nThank you!",
+        "provider": "Nodemailer SMTP",
+        "error": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials a92af1059eb24-1b5567ffa8csm7293613c88.7 - gsmtp",
+        "retryCount": 0
+      }
+    },
+    {
+      "id": "ticket-1795185064800-fabkn",
+      "ticketNumber": "GEN-115",
+      "patientName": "Aditya Kumar",
+      "age": 19,
+      "gender": "Male",
+      "contactNumber": "N/A",
+      "email": "bhagatrabindra191@gmail.com",
+      "departmentId": "dept-gen",
+      "doctorId": "doc-1",
+      "priority": "NORMAL",
+      "chiefComplaint": "General health consultation",
+      "status": "WAITING",
+      "checkInTime": "2026-11-20T14:31:04.800Z",
+      "calledTime": null,
+      "startTime": null,
+      "completedTime": null,
+      "estimatedWaitMinutes": 30,
+      "queuePosition": 3,
+      "smsNotification": {
+        "status": "FAILED",
+        "recipientNumber": "N/A",
+        "messageText": "Hello Aditya Kumar, your registration is successful! Your Token Number is GEN-115. Doctor: Dr. Rajesh Sharma, MD. Date: 20 Nov 2026. Please keep this number for your consultation. Thank you!",
+        "gateway": "validator",
+        "error": "Patient contact mobile number is missing or empty",
+        "retryCount": 0
+      },
+      "emailNotification": {
+        "status": "FAILED",
+        "recipientEmail": "bhagatrabindra191@gmail.com",
+        "subject": "Patient Registration Successful – Your Token Number",
+        "bodyText": "Hello Aditya Kumar,\n\nYour registration has been completed successfully!\n\nYour Token Number: GEN-115\n\nDoctor Name: Dr. Rajesh Sharma, MD\n\nRegistration Date: 20 Nov 2026\n\nPlease keep your Token Number safe for your consultation.\n\nThank you!",
+        "provider": "Nodemailer SMTP",
+        "error": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials a92af1059eb24-1b5567e495bsm10562192c88.4 - gsmtp",
+        "retryCount": 0
+      }
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1795190516066-i0sb",
+      "timestamp": "2026-11-20T16:01:56.066Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
+    {
+      "id": "log-1795190514400-vi6f",
+      "timestamp": "2026-11-20T16:01:54.400Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
+    {
+      "id": "log-1795190428043-mm4e",
+      "timestamp": "2026-11-20T16:00:28.043Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
+    {
+      "id": "log-1795190394420-xs03",
+      "timestamp": "2026-11-20T15:59:54.420Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
+    {
+      "id": "log-1795190294544-r8op",
+      "timestamp": "2026-11-20T15:58:14.545Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
+    {
+      "id": "log-1795185074286-ml8r",
+      "timestamp": "2026-11-20T14:31:14.286Z",
+      "ticketId": "ticket-1795185064800-fabkn",
+      "ticketNumber": "GEN-115",
+      "action": "EMAIL_NOTIFICATION_FAILED",
+      "actor": "Email Notification Service",
+      "details": "Email delivery failed to bhagatrabindra191@gmail.com for Token GEN-115: Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials a92af1059eb24-1b5567e495bsm10562192c88.4 - gsmtp"
+    },
+    {
+      "id": "log-1795185064801-v3pm",
+      "timestamp": "2026-11-20T14:31:04.801Z",
+      "ticketId": "ticket-1795185064800-fabkn",
+      "ticketNumber": "GEN-115",
+      "action": "SMS_NOTIFICATION_FAILED",
+      "actor": "SMS Notification Gateway",
+      "details": "SMS delivery failed to N/A for Token GEN-115: Patient contact mobile number is missing or empty"
+    },
+    {
+      "id": "log-1795185064800-habf",
+      "timestamp": "2026-11-20T14:31:04.800Z",
+      "ticketId": "ticket-1795185064800-fabkn",
+      "ticketNumber": "GEN-115",
+      "action": "PATIENT_CHECKED_IN",
+      "actor": "Reception Desk / Self Kiosk",
+      "details": "Checked in Aditya Kumar (GEN-115) for General Medicine OPD. Priority: NORMAL"
+    },
+    {
+      "id": "log-1795184922264-rwph",
+      "timestamp": "2026-11-20T14:28:42.264Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
+    {
+      "id": "log-1795184917778-37ps",
+      "timestamp": "2026-11-20T14:28:37.778Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
+    {
+      "id": "log-1795184904152-o2ac",
+      "timestamp": "2026-11-20T14:28:24.152Z",
+      "ticketId": "ticket-1795160916940-c1ecx",
+      "ticketNumber": "GEN-113",
+      "action": "PATIENT_CALLED",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Called Aditya kumar (GEN-113) to Room 101. Priority: NORMAL"
+    },
+    {
+      "id": "log-1795184712114-5was",
+      "timestamp": "2026-11-20T14:25:12.115Z",
+      "ticketId": "ticket-1795184709527-0waeq",
+      "ticketNumber": "GEN-114",
+      "action": "EMAIL_NOTIFICATION_FAILED",
+      "actor": "Email Notification Service",
+      "details": "Email delivery failed to bhagatrabindra191@gmail.com for Token GEN-114: Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials a92af1059eb24-1b5567ffa8csm7293613c88.7 - gsmtp"
+    },
+    {
+      "id": "log-1795184709558-6oz9",
+      "timestamp": "2026-11-20T14:25:09.558Z",
+      "ticketId": "ticket-1795184709527-0waeq",
+      "ticketNumber": "GEN-114",
+      "action": "SMS_NOTIFICATION_FAILED",
+      "actor": "SMS Notification Gateway",
+      "details": "SMS delivery failed to N/A for Token GEN-114: Patient contact mobile number is missing or empty"
+    },
+    {
+      "id": "log-1795184709527-j6t2",
+      "timestamp": "2026-11-20T14:25:09.527Z",
+      "ticketId": "ticket-1795184709527-0waeq",
+      "ticketNumber": "GEN-114",
+      "action": "PATIENT_CHECKED_IN",
+      "actor": "Reception Desk / Self Kiosk",
+      "details": "Checked in Rabindar bhagat (GEN-114) for General Medicine OPD. Priority: NORMAL"
+    },
     {
       "id": "log-1795181715481-gjtj",
       "timestamp": "2026-11-20T13:35:15.481Z",
@@ -1229,33 +1415,6 @@
       "action": "CONSULTATION_COMPLETED",
       "actor": "Dr. Rajesh Sharma, MD",
       "details": "Completed session for Ramesh Gupta (GEN-101)"
-    },
-    {
-      "id": "log-1",
-      "timestamp": "2026-11-19T06:00:56.646Z",
-      "ticketId": "ticket-demo-1",
-      "ticketNumber": "GEN-101",
-      "action": "CHECK_IN",
-      "actor": "Reception Triage Desk",
-      "details": "Patient Ramesh Gupta registered for General Medicine"
-    },
-    {
-      "id": "log-2",
-      "timestamp": "2026-11-19T06:30:56.646Z",
-      "ticketId": "ticket-demo-1",
-      "ticketNumber": "GEN-101",
-      "action": "CALLED_TO_ROOM",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Called to Room 101 for consultation"
-    },
-    {
-      "id": "log-3",
-      "timestamp": "2026-11-19T06:32:56.646Z",
-      "ticketId": "ticket-demo-1",
-      "ticketNumber": "GEN-101",
-      "action": "CONSULTATION_STARTED",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Patient entered Room 101"
     }
   ],
   "announcements": [

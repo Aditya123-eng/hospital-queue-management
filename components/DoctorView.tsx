@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Doctor, 
   QueueTicket, 
@@ -49,6 +49,13 @@ export default function DoctorView({
   const [showDelayModal, setShowDelayModal] = useState(false);
   const [isCallingNext, setIsCallingNext] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Keep selectedDoctorId in sync when doctors load or change
+  useEffect(() => {
+    if ((!selectedDoctorId || !doctors.some(d => d.id === selectedDoctorId)) && doctors.length > 0) {
+      setSelectedDoctorId(doctors[0].id);
+    }
+  }, [doctors, selectedDoctorId]);
 
   const selectedDoctor = doctors.find(d => d.id === selectedDoctorId) || doctors[0];
   const doctorDept = selectedDoctor ? departments.find(d => d.id === selectedDoctor.departmentId) : null;
@@ -124,6 +131,8 @@ export default function DoctorView({
 
   const handleStatusChange = async (status: DoctorStatus) => {
     if (!selectedDoctor || isUpdatingStatus) return;
+
+    unlockAudio();
 
     // Immediate female voice announcement for Active vs Break
     if (status === 'AVAILABLE') {
@@ -218,7 +227,7 @@ export default function DoctorView({
                 onClick={() => handleStatusChange('AVAILABLE')}
                 disabled={isUpdatingStatus}
                 className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                  selectedDoctor.status === 'AVAILABLE' || selectedDoctor.status === 'CONSULTING'
+                  selectedDoctor.status !== 'ON_BREAK' && selectedDoctor.status !== 'OFFLINE'
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                 }`}
@@ -272,7 +281,7 @@ export default function DoctorView({
             </div>
             <div>
               <span className="font-extrabold text-amber-950 text-sm block">Room Status: On Break</span>
-              <span className="text-amber-800 font-medium">Consultations in Room {selectedDoctor.roomNumber} are temporarily paused. Patients in queue are notified.</span>
+              <span className="text-amber-800 font-medium">Consultations in {selectedDoctor.roomNumber.toLowerCase().startsWith('room') ? selectedDoctor.roomNumber : `Room ${selectedDoctor.roomNumber}`} are temporarily paused. Patients in queue are notified.</span>
             </div>
           </div>
           <button
