@@ -65,7 +65,35 @@ export default function Home() {
       }
       if (docsRes.ok) {
         const data = await docsRes.json();
-        setDoctors(data.data || []);
+        const serverDocs: Doctor[] = data.data || [];
+        try {
+          if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('pulsequeue_doctor_overrides');
+            if (stored) {
+              const overrides = JSON.parse(stored);
+              const now = Date.now();
+              const merged = serverDocs.map(doc => {
+                const override = overrides[doc.id];
+                if (override && (now - (override._updatedAt || 0) < 60 * 60 * 1000)) {
+                  return {
+                    ...doc,
+                    ...(override.status ? { status: override.status } : {}),
+                    ...(override.delayMinutes !== undefined ? { delayMinutes: override.delayMinutes } : {}),
+                    ...(override.delayReason !== undefined ? { delayReason: override.delayReason } : {})
+                  };
+                }
+                return doc;
+              });
+              setDoctors(merged);
+            } else {
+              setDoctors(serverDocs);
+            }
+          } else {
+            setDoctors(serverDocs);
+          }
+        } catch {
+          setDoctors(serverDocs);
+        }
       }
       if (deptsRes.ok) {
         const data = await deptsRes.json();
@@ -300,6 +328,20 @@ export default function Home() {
     setDoctors(prev =>
       prev.map(doc => (doc.id === doctorId ? { ...doc, ...data } : doc))
     );
+
+    // Persist in localStorage so background polls never revert user's deliberate action
+    try {
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('pulsequeue_doctor_overrides');
+        const overrides = stored ? JSON.parse(stored) : {};
+        overrides[doctorId] = {
+          ...overrides[doctorId],
+          ...data,
+          _updatedAt: Date.now()
+        };
+        localStorage.setItem('pulsequeue_doctor_overrides', JSON.stringify(overrides));
+      }
+    } catch {}
 
     try {
       const payload = { doctorId, id: doctorId, ...data };

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { 
   HospitalState, 
   Department, 
@@ -10,8 +11,25 @@ import {
   PriorityLevel 
 } from './types';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'hospital-queue-data.json');
+const SEED_FILE = path.join(process.cwd(), 'data', 'hospital-queue-data.json');
+
+function getDataPaths() {
+  const isVercel = process.env.VERCEL === '1' || !!process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production';
+  if (isVercel) {
+    const tmpDir = path.join(os.tmpdir(), 'pulsequeue-data');
+    return {
+      dir: tmpDir,
+      file: path.join(tmpDir, 'hospital-queue-data.json')
+    };
+  }
+  const localDir = path.join(process.cwd(), 'data');
+  return {
+    dir: localDir,
+    file: path.join(localDir, 'hospital-queue-data.json')
+  };
+}
+
+let { dir: DATA_DIR, file: DATA_FILE } = getDataPaths();
 
 const INITIAL_DEPARTMENTS: Department[] = [
   {
@@ -272,8 +290,12 @@ export function getPriorityWeight(priority: PriorityLevel): number {
 let memoryState: HospitalState | null = null;
 
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.error('Failed to ensure data dir:', err);
   }
 }
 
@@ -288,11 +310,21 @@ export function getInitialState(): HospitalState {
 }
 
 export function loadHospitalState(): HospitalState {
-  ensureDataDir();
   try {
+    ensureDataDir();
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
       memoryState = JSON.parse(raw);
+    } else if (fs.existsSync(SEED_FILE)) {
+      // First run in /tmp or new container: seed from repository JSON
+      const raw = fs.readFileSync(SEED_FILE, 'utf-8');
+      memoryState = JSON.parse(raw);
+      try {
+        ensureDataDir();
+        fs.writeFileSync(DATA_FILE, JSON.stringify(memoryState, null, 2), 'utf-8');
+      } catch (writeErr) {
+        console.error('Initial seed write to DATA_FILE failed:', writeErr);
+      }
     } else if (!memoryState) {
       memoryState = getInitialState();
       saveHospitalState(memoryState);
@@ -315,7 +347,18 @@ export function saveHospitalState(state: HospitalState): void {
     ensureDataDir();
     fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
   } catch (err) {
-    console.error('Failed to write hospital data to disk:', err);
+    console.error('Failed to write hospital data to primary disk, attempting /tmp fallback:', err);
+    try {
+      const fallbackDir = path.join(os.tmpdir(), 'pulsequeue-data');
+      if (!fs.existsSync(fallbackDir)) {
+        fs.mkdirSync(fallbackDir, { recursive: true });
+      }
+      DATA_DIR = fallbackDir;
+      DATA_FILE = path.join(fallbackDir, 'hospital-queue-data.json');
+      fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
+    } catch (fallbackErr) {
+      console.error('Failed to write hospital data to fallback disk:', fallbackErr);
+    }
   }
 }
 

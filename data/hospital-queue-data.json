@@ -50,8 +50,8 @@
       "roomNumber": "Room 101",
       "status": "AVAILABLE",
       "currentTicketId": "ticket-1795184709527-0waeq",
-      "delayMinutes": 15,
-      "delayReason": "Emergency clinical review"
+      "delayMinutes": 0,
+      "delayReason": ""
     },
     {
       "id": "doc-2",
