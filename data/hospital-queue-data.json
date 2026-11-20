@@ -48,9 +48,9 @@
       "specialty": "Senior General Physician",
       "departmentId": "dept-gen",
       "roomNumber": "Room 101",
-      "status": "AVAILABLE",
+      "status": "ON_BREAK",
       "currentTicketId": "ticket-1795160916940-c1ecx",
-      "delayMinutes": 10,
+      "delayMinutes": 15,
       "delayReason": "Emergency clinical review"
     },
     {
@@ -539,7 +539,7 @@
       "calledTime": null,
       "startTime": null,
       "completedTime": null,
-      "estimatedWaitMinutes": 20,
+      "estimatedWaitMinutes": 25,
       "queuePosition": 2,
       "smsNotification": {
         "status": "FAILED",
@@ -576,7 +576,7 @@
       "calledTime": null,
       "startTime": null,
       "completedTime": null,
-      "estimatedWaitMinutes": 30,
+      "estimatedWaitMinutes": 35,
       "queuePosition": 3,
       "smsNotification": {
         "status": "FAILED",
@@ -598,6 +598,20 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1795193917506-vhwy",
+      "timestamp": "2026-11-20T16:58:37.506Z",
+      "action": "DOCTOR_DELAY_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Updated delay to 15 minutes. Reason: Emergency clinical review"
+    },
+    {
+      "id": "log-1795193912450-hr8w",
+      "timestamp": "2026-11-20T16:58:32.451Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
     {
       "id": "log-1795190516066-i0sb",
       "timestamp": "2026-11-20T16:01:56.066Z",
@@ -1397,27 +1411,16 @@
       "action": "CONSULTATION_COMPLETED",
       "actor": "Dr. Rajesh Sharma, MD",
       "details": "Completed session for Kavita Iyer (GEN-103)"
-    },
-    {
-      "id": "log-1795071621886-n6b1",
-      "timestamp": "2026-11-19T07:00:21.886Z",
-      "ticketId": "ticket-demo-6",
-      "ticketNumber": "GEN-103",
-      "action": "PATIENT_CALLED",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Called Kavita Iyer (GEN-103) to Room 101. Priority: SENIOR_CITIZEN"
-    },
-    {
-      "id": "log-1795071621886-2gji",
-      "timestamp": "2026-11-19T07:00:21.886Z",
-      "ticketId": "ticket-demo-1",
-      "ticketNumber": "GEN-101",
-      "action": "CONSULTATION_COMPLETED",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Completed session for Ramesh Gupta (GEN-101)"
     }
   ],
   "announcements": [
+    {
+      "id": "ann-1795193917506",
+      "message": "Dr. Rajesh Sharma, MD (General Medicine OPD, Room 101) is delayed by ~15 minutes: Emergency clinical review",
+      "severity": "warning",
+      "createdAt": "2026-11-20T16:58:37.506Z",
+      "departmentId": "dept-gen"
+    },
     {
       "id": "ann-1795157720709",
       "message": "Dr. Rajesh Sharma, MD (General Medicine OPD, Room 101) is delayed by ~10 minutes: Emergency clinical review",

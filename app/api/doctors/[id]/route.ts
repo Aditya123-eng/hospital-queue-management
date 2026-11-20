@@ -5,19 +5,22 @@ import { DoctorStatus } from '@/lib/types';
 // PATCH /api/doctors/[id]
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params?: Promise<{ id?: string }> | { id?: string } }
 ) {
   try {
-    const { id } = await context.params;
+    const rawParams = context?.params ? await Promise.resolve(context.params) : {};
     const body = await request.json();
     const { status, delayMinutes, delayReason, roomNumber } = body;
+    const targetId = String(rawParams?.id || body?.id || body?.doctorId || '').trim();
 
     const state = loadHospitalState();
-    const doctor = state.doctors.find(d => d.id === id);
+    const doctor = state.doctors.find(
+      d => d.id === targetId || d.id.toLowerCase() === targetId.toLowerCase()
+    );
 
     if (!doctor) {
       return NextResponse.json(
-        { success: false, error: `Doctor with id ${id} not found` },
+        { success: false, error: `Doctor with id ${targetId} not found` },
         { status: 404 }
       );
     }

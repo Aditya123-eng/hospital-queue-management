@@ -127,8 +127,7 @@ export default function DoctorView({
     try {
       await onUpdateDoctor(selectedDoctor.id, {
         delayMinutes: mins,
-        delayReason: delayReasonInput,
-        status: mins > 0 ? 'EMERGENCY_DELAY' : 'AVAILABLE'
+        delayReason: delayReasonInput
       });
     } catch (err) {
       console.error('Error broadcasting doctor delay:', err);

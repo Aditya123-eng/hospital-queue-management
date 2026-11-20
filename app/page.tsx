@@ -302,10 +302,11 @@ export default function Home() {
     );
 
     try {
+      const payload = { doctorId, id: doctorId, ...data };
       const res = await fetch(`/api/doctors/${encodeURIComponent(doctorId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(payload)
       });
       const result = await res.json();
       if (!res.ok || !result.success) {
@@ -318,11 +319,10 @@ export default function Home() {
       }
       const toastType = data.status === 'AVAILABLE' ? 'success' : 'info';
       showToast(result.message, toastType);
-      await fetchData(true);
+      fetchData(true);
       return result.data;
     } catch (err: any) {
       showToast(err.message, 'error');
-      await fetchData(true);
       throw err;
     }
   };
