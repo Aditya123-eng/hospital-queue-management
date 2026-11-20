@@ -48,8 +48,8 @@
       "specialty": "Senior General Physician",
       "departmentId": "dept-gen",
       "roomNumber": "Room 101",
-      "status": "ON_BREAK",
-      "currentTicketId": "ticket-1795160916940-c1ecx",
+      "status": "AVAILABLE",
+      "currentTicketId": "ticket-1795184709527-0waeq",
       "delayMinutes": 15,
       "delayReason": "Emergency clinical review"
     },
@@ -495,13 +495,13 @@
       "doctorId": "doc-1",
       "priority": "NORMAL",
       "chiefComplaint": "General health consultation",
-      "status": "CALLED",
+      "status": "COMPLETED",
       "checkInTime": "2026-11-20T07:48:36.940Z",
       "calledTime": "2026-11-20T14:28:24.152Z",
       "startTime": null,
-      "completedTime": null,
+      "completedTime": "2026-11-20T17:12:56.111Z",
       "estimatedWaitMinutes": 0,
-      "queuePosition": 1,
+      "queuePosition": 0,
       "smsNotification": {
         "status": "SENT",
         "recipientNumber": "9330789026",
@@ -534,13 +534,13 @@
       "doctorId": "doc-1",
       "priority": "NORMAL",
       "chiefComplaint": "General health consultation",
-      "status": "WAITING",
+      "status": "CALLED",
       "checkInTime": "2026-11-20T14:25:09.527Z",
-      "calledTime": null,
+      "calledTime": "2026-11-20T17:12:56.111Z",
       "startTime": null,
       "completedTime": null,
-      "estimatedWaitMinutes": 25,
-      "queuePosition": 2,
+      "estimatedWaitMinutes": 0,
+      "queuePosition": 1,
       "smsNotification": {
         "status": "FAILED",
         "recipientNumber": "N/A",
@@ -576,8 +576,8 @@
       "calledTime": null,
       "startTime": null,
       "completedTime": null,
-      "estimatedWaitMinutes": 35,
-      "queuePosition": 3,
+      "estimatedWaitMinutes": 25,
+      "queuePosition": 2,
       "smsNotification": {
         "status": "FAILED",
         "recipientNumber": "N/A",
@@ -598,6 +598,45 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1795194962401-jenh",
+      "timestamp": "2026-11-20T17:16:02.401Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
+    {
+      "id": "log-1795194921096-gq6d",
+      "timestamp": "2026-11-20T17:15:21.096Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ON_BREAK in Room 101. Consultations temporarily paused."
+    },
+    {
+      "id": "log-1795194776111-c5v1",
+      "timestamp": "2026-11-20T17:12:56.111Z",
+      "ticketId": "ticket-1795184709527-0waeq",
+      "ticketNumber": "GEN-114",
+      "action": "PATIENT_CALLED",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Called Rabindar bhagat (GEN-114) to Room 101. Priority: NORMAL"
+    },
+    {
+      "id": "log-1795194776111-ui7q",
+      "timestamp": "2026-11-20T17:12:56.111Z",
+      "ticketId": "ticket-1795160916940-c1ecx",
+      "ticketNumber": "GEN-113",
+      "action": "CONSULTATION_COMPLETED",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Completed session for Aditya kumar (GEN-113)"
+    },
+    {
+      "id": "log-1795194770137-l61c",
+      "timestamp": "2026-11-20T17:12:50.138Z",
+      "action": "DOCTOR_STATUS_UPDATE",
+      "actor": "Dr. Rajesh Sharma, MD",
+      "details": "Set status to ACTIVE in Room 101. Doctor is ready for consultations."
+    },
     {
       "id": "log-1795193917506-vhwy",
       "timestamp": "2026-11-20T16:58:37.506Z",
@@ -1366,51 +1405,6 @@
       "action": "PATIENT_CHECKED_IN",
       "actor": "Reception Desk / Self Kiosk",
       "details": "Checked in Devendra Singhania (CRITICAL) (GEN-105) for General Medicine OPD. Priority: EMERGENCY"
-    },
-    {
-      "id": "log-1795094210328-g647",
-      "timestamp": "2026-11-19T13:16:50.328Z",
-      "ticketId": "ticket-1795094210328-m0chs",
-      "ticketNumber": "GEN-104",
-      "action": "PATIENT_CHECKED_IN",
-      "actor": "Reception Desk / Self Kiosk",
-      "details": "Checked in Arjun Kapoor (GEN-104) for General Medicine OPD. Priority: NORMAL"
-    },
-    {
-      "id": "log-1795071789185-b916",
-      "timestamp": "2026-11-19T07:03:09.185Z",
-      "ticketId": "ticket-demo-4",
-      "ticketNumber": "CARD-301",
-      "action": "PATIENT_CALLED",
-      "actor": "Dr. Priya Nambiar, MD, DM",
-      "details": "Called Deepak Joshi (CARD-301) to Room 201. Priority: URGENT"
-    },
-    {
-      "id": "log-1795071644247-b6mj",
-      "timestamp": "2026-11-19T07:00:44.247Z",
-      "ticketId": "ticket-demo-3",
-      "ticketNumber": "GEN-102",
-      "action": "CONSULTATION_COMPLETED",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Completed session for Aarav Verma (GEN-102)"
-    },
-    {
-      "id": "log-1795071633540-54sw",
-      "timestamp": "2026-11-19T07:00:33.540Z",
-      "ticketId": "ticket-demo-3",
-      "ticketNumber": "GEN-102",
-      "action": "PATIENT_CALLED",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Called Aarav Verma (GEN-102) to Room 101. Priority: NORMAL"
-    },
-    {
-      "id": "log-1795071633540-drlp",
-      "timestamp": "2026-11-19T07:00:33.540Z",
-      "ticketId": "ticket-demo-6",
-      "ticketNumber": "GEN-103",
-      "action": "CONSULTATION_COMPLETED",
-      "actor": "Dr. Rajesh Sharma, MD",
-      "details": "Completed session for Kavita Iyer (GEN-103)"
     }
   ],
   "announcements": [
