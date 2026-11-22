@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { getDb, isPostgresConfigured, schema } from '@/db';
+import { eq } from 'drizzle-orm';
 import { 
   HospitalState, 
   Department, 
@@ -309,40 +311,28 @@ export function getInitialState(): HospitalState {
   };
 }
 
-export function loadHospitalState(): HospitalState {
+function loadStateFromDisk(): HospitalState {
   try {
     ensureDataDir();
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-      memoryState = JSON.parse(raw);
+      return JSON.parse(raw);
     } else if (fs.existsSync(SEED_FILE)) {
-      // First run in /tmp or new container: seed from repository JSON
       const raw = fs.readFileSync(SEED_FILE, 'utf-8');
-      memoryState = JSON.parse(raw);
+      const parsed = JSON.parse(raw);
       try {
         ensureDataDir();
-        fs.writeFileSync(DATA_FILE, JSON.stringify(memoryState, null, 2), 'utf-8');
-      } catch (writeErr) {
-        console.error('Initial seed write to DATA_FILE failed:', writeErr);
-      }
-    } else if (!memoryState) {
-      memoryState = getInitialState();
-      saveHospitalState(memoryState);
+        fs.writeFileSync(DATA_FILE, JSON.stringify(parsed, null, 2), 'utf-8');
+      } catch {}
+      return parsed;
     }
   } catch (err) {
-    console.error('Error loading hospital state from disk, using fallback in-memory state:', err);
-    if (!memoryState) {
-      memoryState = getInitialState();
-    }
+    console.error('Error reading disk state:', err);
   }
-
-  recalculateQueues(memoryState!);
-  return memoryState!;
+  return getInitialState();
 }
 
-export function saveHospitalState(state: HospitalState): void {
-  recalculateQueues(state);
-  memoryState = state;
+function saveStateToDisk(state: HospitalState): void {
   try {
     ensureDataDir();
     fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
@@ -362,9 +352,93 @@ export function saveHospitalState(state: HospitalState): void {
   }
 }
 
-export function resetAndSeedState(): HospitalState {
+export async function loadHospitalState(): Promise<HospitalState> {
+  // 1. Try Drizzle ORM + Neon PostgreSQL first
+  if (isPostgresConfigured()) {
+    try {
+      const db = getDb();
+      if (db) {
+        const rows = await db
+          .select()
+          .from(schema.hospitalState)
+          .where(eq(schema.hospitalState.id, 'main'))
+          .limit(1);
+
+        if (rows.length > 0 && rows[0].data) {
+          memoryState = rows[0].data;
+          recalculateQueues(memoryState);
+          return memoryState;
+        } else {
+          // Table empty -> Seed with initial data into Neon Postgres
+          const seedData = loadStateFromDisk();
+          await db
+            .insert(schema.hospitalState)
+            .values({
+              id: 'main',
+              data: seedData,
+              updatedAt: new Date(),
+            })
+            .onConflictDoUpdate({
+              target: schema.hospitalState.id,
+              set: {
+                data: seedData,
+                updatedAt: new Date(),
+              },
+            });
+          memoryState = seedData;
+          recalculateQueues(memoryState);
+          return memoryState;
+        }
+      }
+    } catch (err) {
+      console.error('Drizzle / Neon Postgres query error, using local fallback:', err);
+    }
+  }
+
+  // 2. Local disk / in-memory fallback
+  if (!memoryState) {
+    memoryState = loadStateFromDisk();
+  }
+  recalculateQueues(memoryState);
+  return memoryState;
+}
+
+export async function saveHospitalState(state: HospitalState): Promise<void> {
+  recalculateQueues(state);
+  memoryState = state;
+
+  // 1. Save to Drizzle ORM + Neon Postgres
+  if (isPostgresConfigured()) {
+    try {
+      const db = getDb();
+      if (db) {
+        await db
+          .insert(schema.hospitalState)
+          .values({
+            id: 'main',
+            data: state,
+            updatedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: schema.hospitalState.id,
+            set: {
+              data: state,
+              updatedAt: new Date(),
+            },
+          });
+      }
+    } catch (err) {
+      console.error('Failed to save state to Drizzle / Neon Postgres:', err);
+    }
+  }
+
+  // 2. Also save to disk / /tmp as a resilient replica
+  saveStateToDisk(state);
+}
+
+export async function resetAndSeedState(): Promise<HospitalState> {
   const fresh = getInitialState();
-  saveHospitalState(fresh);
+  await saveHospitalState(fresh);
   return fresh;
 }
 

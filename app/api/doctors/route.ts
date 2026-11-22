@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const departmentId = searchParams.get('departmentId');
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     let doctors = state.doctors;
 
     if (departmentId) {
@@ -66,7 +66,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const doctor = state.doctors.find(
       d => d.id === targetId || d.id.toLowerCase() === targetId.toLowerCase()
     );
@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest) {
       doctor.roomNumber = roomNumber.trim();
     }
 
-    saveHospitalState(state);
+    await saveHospitalState(state);
 
     return NextResponse.json(
       {

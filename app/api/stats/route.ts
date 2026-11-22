@@ -4,7 +4,7 @@ import { loadHospitalState } from '@/lib/store';
 // GET /api/stats
 export async function GET() {
   try {
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
 
     const totalTickets = state.tickets.length;
     const waitingTickets = state.tickets.filter(t => t.status === 'WAITING');

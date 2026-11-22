@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const doctor = state.doctors.find(d => d.id === doctorId);
 
     if (!doctor) {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       nextTicket
     );
 
-    saveHospitalState(state);
+    await saveHospitalState(state);
 
     return NextResponse.json({
       success: true,

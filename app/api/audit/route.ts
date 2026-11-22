@@ -4,7 +4,7 @@ import { loadHospitalState } from '@/lib/store';
 // GET /api/audit
 export async function GET() {
   try {
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     return NextResponse.json(
       {
         success: true,

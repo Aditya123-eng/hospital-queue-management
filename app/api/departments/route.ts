@@ -4,7 +4,7 @@ import { loadHospitalState } from '@/lib/store';
 // GET /api/departments
 export async function GET() {
   try {
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
 
     const departmentsWithStats = state.departments.map(dept => {
       const deptTickets = state.tickets.filter(t => t.departmentId === dept.id);

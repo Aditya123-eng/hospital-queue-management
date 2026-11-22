@@ -15,7 +15,7 @@ export async function GET(
     const { id } = await context.params;
     const queryId = decodeURIComponent(id).trim();
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const ticket = state.tickets.find(
       t => t.id === queryId || t.ticketNumber.toUpperCase() === queryId.toUpperCase()
     );
@@ -67,7 +67,7 @@ export async function PATCH(
     const queryId = decodeURIComponent(id).trim();
     const body = await request.json();
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const ticketIndex = state.tickets.findIndex(
       t => t.id === queryId || t.ticketNumber.toUpperCase() === queryId.toUpperCase()
     );
@@ -210,7 +210,7 @@ export async function PATCH(
       );
     }
 
-    saveHospitalState(state);
+    await saveHospitalState(state);
 
     return NextResponse.json({
       success: true,

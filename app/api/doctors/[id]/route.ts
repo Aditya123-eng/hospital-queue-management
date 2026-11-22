@@ -13,7 +13,7 @@ export async function PATCH(
     const { status, delayMinutes, delayReason, roomNumber } = body;
     const targetId = String(id || body?.id || body?.doctorId || '').trim();
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const doctor = state.doctors.find(
       d => d.id === targetId || d.id.toLowerCase() === targetId.toLowerCase()
     );
@@ -115,7 +115,7 @@ export async function PATCH(
       message = `Doctor ${doctor.name} relocated to Room ${doctor.roomNumber}.`;
     }
 
-    saveHospitalState(state);
+    await saveHospitalState(state);
 
     return NextResponse.json(
       {

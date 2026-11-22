@@ -4,7 +4,7 @@ import { resetAndSeedState } from '@/lib/store';
 // POST /api/seed
 export async function POST() {
   try {
-    const freshState = resetAndSeedState();
+    const freshState = await resetAndSeedState();
     return NextResponse.json({
       success: true,
       message: 'Hospital queue database reset and re-seeded successfully with demo data.',

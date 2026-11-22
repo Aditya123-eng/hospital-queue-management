@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const search = searchParams.get('search')?.toLowerCase();
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     let tickets = [...state.tickets];
 
     if (departmentId) {
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const department = state.departments.find(d => d.id === departmentId);
     if (!department) {
       return NextResponse.json(
@@ -309,7 +309,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    saveHospitalState(state);
+    await saveHospitalState(state);
 
     // Reload state after recalculateQueues to get calculated wait & position
     const refreshedTicket = state.tickets.find(t => t.id === newTicket.id);

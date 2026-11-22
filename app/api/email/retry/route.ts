@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const query = ticketId.trim();
     const ticket = state.tickets.find(
       t => t.id === query || t.ticketNumber.toUpperCase() === query.toUpperCase()
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    saveHospitalState(state);
+    await saveHospitalState(state);
 
     return NextResponse.json({
       success: emailResult.success,

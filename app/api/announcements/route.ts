@@ -5,7 +5,7 @@ import { HospitalAnnouncement } from '@/lib/types';
 // GET /api/announcements
 export async function GET() {
   try {
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     return NextResponse.json(
       {
         success: true,
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const state = loadHospitalState();
+    const state = await loadHospitalState();
     const newAnnouncement: HospitalAnnouncement = {
       id: `ann-${Date.now()}`,
       message: message.trim(),
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       `Posted announcement: "${newAnnouncement.message}"`
     );
 
-    saveHospitalState(state);
+    await saveHospitalState(state);
 
     return NextResponse.json(
       { success: true, message: 'Announcement broadcasted', data: newAnnouncement },
